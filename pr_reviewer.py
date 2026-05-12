@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
 """
-GitHub PR Code Review Analyzer using Claude
+GitHub PR Code Review Analyzer using Google Gemini
 Analyzes pull request diffs and generates a first-level review summary
 """
 
 import json
 import sys
 import os
-from anthropic import Anthropic
+import google.generativeai as genai
 
 def analyze_pr_diff(diff_content: str) -> str:
     """
-    Analyze PR diff using Claude and return a summary review
+    Analyze PR diff using Google Gemini and return a summary review
     """
-    client = Anthropic()
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise ValueError("ANTHROPIC_API_KEY environment variable not set")
+    
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-1.5-flash")
     
     analysis_prompt = f"""You are a code reviewer. Analyze this pull request diff and provide a FIRST-LEVEL REVIEW summary.
 
@@ -36,15 +41,8 @@ DIFF:
 {diff_content}
 """
     
-    message = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
-        max_tokens=1024,
-        messages=[
-            {"role": "user", "content": analysis_prompt}
-        ]
-    )
-    
-    return message.content[0].text
+    response = model.generate_content(analysis_prompt)
+    return response.text
 
 def format_github_comment(review_analysis: str) -> str:
     """
