@@ -7,7 +7,7 @@ Analyzes pull request diffs and generates a first-level review summary
 import json
 import sys
 import os
-import google.generativeai as genai
+import google.genai as genai
 
 def analyze_pr_diff(diff_content: str) -> str:
     """
@@ -17,8 +17,7 @@ def analyze_pr_diff(diff_content: str) -> str:
     if not api_key:
         raise ValueError("ANTHROPIC_API_KEY environment variable not set")
     
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    client = genai.Client(api_key=api_key)
     
     analysis_prompt = f"""You are a code reviewer. Analyze this pull request diff and provide a FIRST-LEVEL REVIEW summary.
 
@@ -41,7 +40,10 @@ DIFF:
 {diff_content}
 """
     
-    response = model.generate_content(analysis_prompt)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=analysis_prompt
+    )
     return response.text
 
 def format_github_comment(review_analysis: str) -> str:
