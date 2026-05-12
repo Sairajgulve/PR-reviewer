@@ -21,7 +21,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install anthropic
+          pip install -r requirements.txt
       
       - name: Get PR diff
         id: diff
